@@ -1,1 +1,1 @@
-Sandbox for experimenting with playwright jvm tools (driver cacher, testing patterns, proxy server/client)
+Sandbox for experimenting with playwright jvm tools (proxy server/client, driver cacher, testing patterns)

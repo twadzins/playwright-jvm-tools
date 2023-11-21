@@ -11,7 +11,7 @@ val cachedDriverDir = "${System.getProperty("java.io.tmpdir")}/playwright-driver
 
 @Throws(IOException::class, InterruptedException::class)
 fun main() {
-    println("uptime at1234 start of beforeAll = ${ManagementFactory.getRuntimeMXBean().uptime}")
+    println("uptime at start of beforeAll = ${ManagementFactory.getRuntimeMXBean().uptime}")
     cacheCliDirIfNeeded()
 }
 
@@ -20,19 +20,7 @@ fun main() {
  *
  * Also, patches the driver so that JCEF is allowed to run
  */
-fun cacheCliDirIfNeeded() {
-    if (System.getProperty("playwright.cli.dir") == null) {
-        val cachedCliDir = cacheCliDirIfNeededInternal()
-        System.setProperty("playwright.cli.dir", cachedCliDir)
-    }
-}
-
-/**
- * Save around 500ms of app startup time by caching the cli dir rather than unzipping it each on each startup.
- *
- * Also, patches the driver so that JCEF is allowed to run
- */
-private fun cacheCliDirIfNeededInternal(): String {
+fun cacheCliDirIfNeeded(): String {
     if (File(cachedDriverDir, "playwright.sh").exists()) {
         println("Using existing cached driver at : $cachedDriverDir/")
         return cachedDriverDir;

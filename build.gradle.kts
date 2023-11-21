@@ -1,13 +1,13 @@
-//no java
-tasks.named("classes") {
-    enabled = false
-}
-tasks.named("testClasses") {
-    enabled = false
-}
+////no java
+//tasks.named("classes") {
+//    enabled = false
+//}
+//tasks.named("testClasses") {
+//    enabled = false
+//}
 
 plugins {
-    kotlin("jvm") version "1.9.20-Beta"
+    kotlin("jvm") version "2.0.0-Beta1"
     `maven-publish`
 }
 
@@ -19,7 +19,14 @@ repositories {
 }
 
 dependencies {
-    implementation("com.microsoft.playwright:playwright:1.37.0")
+    implementation("com.microsoft.playwright:playwright:1.40.0")
+
+    implementation(kotlin("reflect"))
+
+    // https://mvnrepository.com/artifact/com.squareup/kotlinpoet
+    implementation("com.squareup:kotlinpoet:1.14.2")
+    implementation("com.squareup:kotlinpoet-metadata:1.14.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
     compileOnly("org.junit.jupiter:junit-jupiter-api:5.9.3")
 
     testImplementation(kotlin("test"))
@@ -34,7 +41,8 @@ tasks.test {
 }
 
 kotlin {
-//    jvmToolchain(19)
+//    useCompilerVersion("2.0.0-dev-5387")
+//    jvmToolchain(17)
 //    sourceSets.all {
 //        languageSettings {
 //            languageVersion = "2.0"
@@ -42,7 +50,13 @@ kotlin {
 //    }
 }
 
-
+tasks.register<JavaExec>("playwrightInstall") {
+    description = "Run playwright CLI install, which downloads browsers"
+    group = ApplicationPlugin.APPLICATION_GROUP
+    classpath = sourceSets["main"].runtimeClasspath
+    args("install")
+    mainClass.set("com.microsoft.playwright.CLI")
+}
 
 // isn't faster yet:
 //tasks.named("compileKotlin", org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask::class.java) {
