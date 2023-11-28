@@ -22,7 +22,8 @@ object LazyEngineerClientUtil {
     }
 
 
-    internal fun getDefaultClient(): PlaywrightClient {
+    internal fun getDefaultClient(baseUrl: String?, headed: Boolean): PlaywrightClient {
+        val defaultTimeout = 2500.0
         val now = System.currentTimeMillis()
 
         if (System.getProperty("playwright.cli.dir") == null) {
@@ -37,14 +38,15 @@ object LazyEngineerClientUtil {
 
         if (useIncognito) {
             val browser = playwright.chromium().launch(options {
-                headless = false
+                headless = !headed
                 args = listOf("--allow-file-access-from-files")
+
             })
 
-            val context = browser.newContext(options { baseURL = "http://localhost:3000" })
+            val context = browser.newContext(options { baseURL = baseUrl; bypassCSP = true})
 
-            val page = context.newPage()
             context.addInitScript("window.localStorage.clear();window.Cypress={};window.PlaywrightDebug={};")
+            val page = context.newPage()
 
             println("getDefaultClient complete = ${System.currentTimeMillis() - now}")
             return PlaywrightClient(playwright, context, page)
@@ -52,21 +54,21 @@ object LazyEngineerClientUtil {
             //TODO make this configurable
             val persistentLaunchOptions =
                 BrowserType.LaunchPersistentContextOptions()
-                    .setHeadless(false)
+                    .setHeadless(!headed)
                     .setArgs(listOf("--allow-file-access-from-files"))
+                    .setBaseURL(baseUrl)
+                    .setBypassCSP(true)
 
             val context =
                 playwright.chromium().launchPersistentContext(Path("/tmp/foo"), persistentLaunchOptions)
-//            context.addInitScript("window.localStorage.clear();window.Cypress={};window.PlaywrightDebug={};")
-            context.setDefaultTimeout(1500.0) //TODO: should be smart based on whether any network activity is happening
+            context.addInitScript("window.Cypress={};window.PlaywrightDebug={};")
+            context.setDefaultTimeout(defaultTimeout)
             val page = context.pages()[0]
 
             println("getDefaultClient (not incog) complete = ${System.currentTimeMillis() - now}")
             return PlaywrightClient(playwright, context, page)
         }
-
     }
-
 
     private const val useRealUptimeLogging = false
 
@@ -141,7 +143,7 @@ object LazyEngineerClientUtil {
 //    return playwright
     }
 
-    fun getRemoteDebugClient(port: Int): PlaywrightClient {
+    fun getRemoteDebugClient(port: Int, baseUrl: String?): PlaywrightClient {
         System.err.println("Loading debug client...")
 
         val now = System.currentTimeMillis()
@@ -154,6 +156,7 @@ object LazyEngineerClientUtil {
 //        val browser: Browser = playwright.chromium().connectOverCDP("http://localhost:9394")
         val browser: Browser = playwright.chromium().connectOverCDP("ws://localhost:9394/devtools/browser/dbe9852f-d10b-4a60-95cc-3b2644d42cce")
         val context = browser.contexts()[0]
+        (context as BrowserContextImpl).setBaseUrl(baseUrl)
         val page = context.pages()[0]
         setTimeout(page)
         context.addInitScript("console.log(\"server initscript: clear ls, set window.PlaywrightDebug\");window.localStorage.clear();window.Cypress={};window.PlaywrightDebug={};")

@@ -3,9 +3,6 @@ package com.lazyengineer.playwright.old
 import com.lazyengineer.playwright.test.extensions.applyFailurePreprocessing
 import com.lazyengineer.playwright.test.options
 import com.microsoft.playwright.Locator
-import com.microsoft.playwright.Locator.GetByRoleOptions
-import com.microsoft.playwright.TimeoutError
-import com.microsoft.playwright.options.AriaRole
 
 
 // TODO: consider replacing some/all of this with KotlinPoet code.

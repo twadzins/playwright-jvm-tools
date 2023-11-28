@@ -7,7 +7,7 @@ import com.microsoft.playwright.impl.LazyEngineerUtil
 
 
 fun applyFailurePreprocessing(locator: Locator, e: Throwable): Throwable {
-    highlightElementNearFailure(locator)
+    highlightElementsNearFailure(locator)
     if (e is TimeoutError) {
         // present more concise timeout error - original is filled with fluff, so instead just get the line after "================ logs ==============="
         val message = timeoutLogRegex.find(e.message!!)?.groupValues?.run {
@@ -30,24 +30,24 @@ class PlaywrightTimeoutError(message: String?, stackTrace: Array<StackTraceEleme
     }
 }
 
-fun highlightElementNearFailure(locator: Locator) {
+fun highlightElementsNearFailure(locator: Locator) {
     // highlight parent locator in the DOM (if it exists) for easier troubleshooting
     var locatorMatchNotFound = true
     var targetLocatorString = getLocatorString(locator)
     while (locatorMatchNotFound) {
-        val selector = if (locator is PageFragment && locator.frame != null) {
-            locator.frame.querySelector(targetLocatorString)
+        val selectors = if (locator is PageFragment && locator.frame != null) {
+            locator.frame.querySelectorAll(targetLocatorString)
         } else {
-            locator.page().querySelector(targetLocatorString)
+            locator.page().querySelectorAll(targetLocatorString)
         }
-        if (selector == null) {
+        if (selectors.isEmpty()) {
             targetLocatorString = getParentLocatorString(targetLocatorString)
             if (targetLocatorString == "" || targetLocatorString == "body") {
                 //no interesting portion of the dom to higlight, just exit
                 locatorMatchNotFound = false
             }
         } else {
-            selector.evaluate(
+            selectors.forEach { it.evaluate(
                 """
                                 node => {
                                 node.style.filter = "opacity(.92) drop-shadow(1px 1px 2px red)";
@@ -55,6 +55,7 @@ fun highlightElementNearFailure(locator: Locator) {
                                 node.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
                                 }""".trimIndent()
             )
+            }
             locatorMatchNotFound = false
         }
     }

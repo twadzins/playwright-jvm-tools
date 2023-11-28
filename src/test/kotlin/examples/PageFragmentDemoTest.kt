@@ -5,8 +5,11 @@ import com.lazyengineer.playwright.proxy.client.playwrightClient
 import com.lazyengineer.playwright.test.PageFragment
 import com.lazyengineer.playwright.test.TestInit.initTestsAsync
 import com.lazyengineer.playwright.test.extensions.assertThat
-import com.lazyengineer.playwright.test.extensions.shouldBeVisible
 import com.lazyengineer.playwright.test.extensions.shouldContainText
+import com.lazyengineer.playwright.test.generated.clickAriaButton
+import com.lazyengineer.playwright.test.generated.getAriaMain
+import com.lazyengineer.playwright.test.generated.getAriaNavigation
+import com.lazyengineer.playwright.test.generated.getAriaTablist
 import com.lazyengineer.playwright.test.navigateTo
 import com.lazyengineer.playwright.test.toPageFragment
 import com.microsoft.playwright.Locator
@@ -23,11 +26,11 @@ class PageFragmentDemoTest {
 
 
     class PlaywrightDocsJavaHomePage(locator: Locator) : PageFragment(locator) {
-        val sideNav get() = getAriaNavigation(exactName = "Docs sidebar")
-        val sideNavAsCustomPageFragment get() = getAriaNavigation(exactName = "Docs sidebar").toPageFragment<SideNav>()
-        val topNav get() = getAriaNavigation(exactName = "Main").toPageFragment<PageFragment>()
+        val sideNav get() = getAriaNavigation("Docs sidebar")
+        val sideNavAsCustomPageFragment get() = getAriaNavigation(containsName = "Docs sideb").toPageFragment<SideNav>()
+        val topNav get() = getAriaNavigation("Main")
 
-        val main get() = getAriaMain().toPageFragment<PageFragment>()
+        val main get() = getAriaMain()
     }
 
     class SideNav(locator: Locator) : PageFragment(locator) {
@@ -37,7 +40,8 @@ class PageFragmentDemoTest {
     @Test
     fun `show custom PageFragment functionality`() {
         //given
-        val (playwright, context, page) = playwrightClient
+//        val (playwright, context, page) = playwrightClient
+        val page = playwrightClient.newPage()
 
         //when
         val docsPage = page.navigateTo<PlaywrightDocsJavaHomePage>("https://playwright.dev/java/docs/intro")
@@ -61,7 +65,8 @@ class PageFragmentDemoTest {
     @Test
     fun `show PageFragment functionality`() {
         //given
-        val (playwright, context, page) = playwrightClient
+//        val (playwright, context, page) = playwrightClient
+        val page = playwrightClient.newPage()
 
 
         //when

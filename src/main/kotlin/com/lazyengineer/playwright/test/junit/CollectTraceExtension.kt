@@ -24,7 +24,8 @@ class CollectTraceExtension: AfterEachCallback, BeforeEachCallback {
     companion object {
         fun startPlaywrightTracing() {
             //        playwrightProxyClient.page.context().tracing().stop()
-            playwrightClient.page.context().tracing().start(
+//            playwrightClient.page.context().tracing().start(
+            playwrightClient.context.tracing().start(
                 Tracing.StartOptions().setScreenshots(true).setSnapshots(true).setSources(true)
             )
         }
@@ -32,7 +33,8 @@ class CollectTraceExtension: AfterEachCallback, BeforeEachCallback {
         fun stopPlaywrightTracing() {
             val tracePath = kotlin.io.path.createTempFile(Paths.get("./build/"), "trace-", ".zip")
             try {
-                playwrightClient.page.context().tracing().stop(
+//                playwrightClient.page.context().tracing().stop(
+                playwrightClient.context.tracing().stop(
                     Tracing.StopOptions().setPath(tracePath)
                 )
             } catch (e: PlaywrightException) {

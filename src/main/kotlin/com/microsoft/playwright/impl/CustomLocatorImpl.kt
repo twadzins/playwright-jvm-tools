@@ -1,7 +1,6 @@
 package com.microsoft.playwright.impl
 
 import com.google.gson.JsonObject
-import com.lazyengineer.playwright.test.options
 import com.microsoft.playwright.ElementHandle
 import com.microsoft.playwright.JSHandle
 import com.microsoft.playwright.Locator
@@ -598,13 +597,14 @@ open class CustomLocatorImpl(locator: Locator) :
 //    }
 
     // new
-    fun clickButtonBy(init: Locator.GetByRoleOptions.() -> Unit) = getByRole(AriaRole.BUTTON, options(init)).click()
+//    fun clickButtonByOrig(init: Locator.GetByRoleOptions.() -> Unit) = getByRole(AriaRole.BUTTON, options(init)).click()
+//
+//    fun clickByRoleOrig(role: AriaRole, options: Locator.GetByRoleOptions?): Locator {
+//        return super.getByRole(role, options).also {
+//            it.click()
+//        }
+//    }
 
-    fun clickByRole(role: AriaRole, options: Locator.GetByRoleOptions?): Locator {
-        return super.getByRole(role, options).also {
-            it.click()
-        }
-    }
 
     /*
         public open fun getAriaButton(
