@@ -20,8 +20,8 @@ fun main() {
  *
  * Also, patches the driver so that JCEF is allowed to run
  */
-fun cacheCliDirIfNeeded(): String {
-    if (File(cachedDriverDir, "playwright.sh").exists()) {
+fun cacheCliDirIfNeeded(allowBrowserCacheWhenInterceptingRequests: Boolean = true): String {
+    if (File(cachedDriverDir, "package").exists()) {
         println("Using existing cached driver at : $cachedDriverDir/")
         return cachedDriverDir;
     }
@@ -43,6 +43,19 @@ fun cacheCliDirIfNeeded(): String {
             val oldCheck = "if (this._browser.options.name !== 'electron' && this._browser.options.name !== 'clank') {"
             val patchedCheck = "if (false && this._browser.options.name !== 'electron' && this._browser.options.name !== 'clank') {"
             it.writeText(it.readText().replace(oldCheck, patchedCheck))
+        }
+        if (allowBrowserCacheWhenInterceptingRequests && it.name == "crNetworkManager.js") {
+            // don't disable caching when intercepting requests:
+            val text = it.readText()
+            val old = "      await Promise.all([this._session.send('Network.setCacheDisabled', {\n" +
+                    "        cacheDisabled: true\n" +
+                    "      }), this._session.send('Fetch.enable', {"
+            if (text.indexOf(old) > -1) {
+                val patched = old.replace("cacheDisabled: true", "cacheDisabled: false")
+                it.writeText(text.replace(old, patched))
+            } else {
+                println("ERROR: Unable to patch crNetworkManager.js to allow browser cache when intercepting requests. It is likely that crNetworkManager.js has been updated and will need a new patch.")
+            }
         }
     }
     return cachedDriverDir

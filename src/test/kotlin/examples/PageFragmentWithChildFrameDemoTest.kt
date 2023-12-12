@@ -5,11 +5,13 @@ import com.lazyengineer.playwright.proxy.client.playwrightClient
 import com.lazyengineer.playwright.test.PageFragment
 import com.lazyengineer.playwright.test.TestInit.initTestsAsync
 import com.lazyengineer.playwright.test.generated.clickAriaButton
+import com.lazyengineer.playwright.test.junit.CollectTraceExtension
 import com.lazyengineer.playwright.test.navigateTo
 import com.lazyengineer.playwright.test.toPageFragment
 import com.microsoft.playwright.Locator
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 
 
 class PageFragmentWithChildFrameDemoTest {
@@ -34,18 +36,21 @@ class PageFragmentWithChildFrameDemoTest {
         }
     }
 
+    @ExtendWith(CollectTraceExtension::class)
     @Test
+//    @RepeatedTest(10)
     fun `show custom PageFragment functionality (fails and should show app icons in red)`() {
         //given
 //        val (playwright, context, page) = playwrightClient
         val page = playwrightClient.newPage()
 
         //when
-        val googleHomePage = page.navigateTo<GoogleHomePage>("https://www.google.com")
+        val googleHomePage = page.navigateTo<GoogleHomePage>("") // using baseUrl from playwright-config.properties
         val appsMenu = googleHomePage.openAppsMenu()
         appsMenu.clickByExactText("Maps")
 
         //then
+        page.waitForURL("maps*")
     }
 
     @Test

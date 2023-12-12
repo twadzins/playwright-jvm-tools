@@ -13,8 +13,22 @@ import java.util.Properties
 
 private lateinit var playwrightProperties: Properties
 
+var initFailedException: Throwable? = null
 
 val playwrightClient by lazy {
+    // PlaywrightClient is first initialized inside a thread. If this thread fails, next caller will handle the error.
+    if (initFailedException != null) {
+        throw PlaywrightException("Playwright init failed. Cause: ${initFailedException?.message}", initFailedException)
+    }
+    try {
+        createPlaywrightClient()
+    } catch (e: Throwable) {
+        initFailedException = e
+        throw e
+    }
+}
+
+private fun createPlaywrightClient(): PlaywrightClient {
     val configPropertiesFile = File("playwright-config.properties")
 
     playwrightProperties = Properties()
@@ -25,12 +39,13 @@ val playwrightClient by lazy {
         println("Using playwright properties from ${configPropertiesFile.absoluteFile}...")
     }
     val baseUrl = playwrightProperties["baseUrl"] as String?
-    when(playwrightProperties.getProperty("client", "default")) {
+    return when (playwrightProperties.getProperty("client", "default")) {
         "default" -> LazyEngineerClientUtil.getDefaultClient(baseUrl, playwrightProperties.getProperty("headed", "true").toBoolean())
         "chromeCDP" -> {
             val port = playwrightProperties.getProperty("chromeCDPPort")?.toInt() ?: throw IllegalArgumentException("chromeCDPPort must be set when client is chromeCDP, in ${configPropertiesFile.absoluteFile}")
             LazyEngineerClientUtil.getRemoteDebugClient(port, baseUrl)
         }
+
         else -> throw IllegalArgumentException("Unknown 'client' property in $configPropertiesFile, expected either 'default' or 'chromeCDP'")
     }
 }
